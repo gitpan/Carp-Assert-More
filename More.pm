@@ -3,7 +3,6 @@ package Carp::Assert::More;
 use warnings;
 use strict;
 use Exporter;
-use Carp;
 use Carp::Assert;
 
 use vars qw( $VERSION @ISA @EXPORT );
@@ -11,9 +10,14 @@ use vars qw( $VERSION @ISA @EXPORT );
 *_fail_msg = *Carp::Assert::_fail_msg;
 
 BEGIN {
-    $VERSION = '0.01';
+    $VERSION = '0.02';
     @ISA = qw(Exporter);
-    @EXPORT = qw( assert_defined assert_isa );
+    @EXPORT = qw( 
+	assert_defined
+	assert_isa
+	assert_nonref
+	assert_nonblank
+    );
 }
 
 =head1 NAME
@@ -47,6 +51,17 @@ other than readability and simplicity of the code.
 My intent here is to make common assertions easy so that we as programmers
 have no excuse to not use them.
 
+=head1 TODO
+
+Many more functions.  This is just the first proof of concept.
+
+=head1 CAVEATS
+
+I haven't specifically done anything to make Carp::Assert::More be
+backwards compatible with anything besides 5.6.1, much less back to 5.004.
+Perhaps someone with better testing resources in that area can help me
+out here.
+
 =head1 FUNCTIONS
 
 =head2 assert_defined( $this [, $name] )
@@ -57,6 +72,40 @@ Asserts that I<$this> is defined.
 
 sub assert_defined($;$) {
     if ( !defined($_[0]) ) {
+	require Carp;
+	&Carp::confess( _fail_msg($_[1]) );
+    }
+}
+
+=head2 assert_nonref( $this [, $name ] )
+
+Asserts that I<$this> is not undef and not a reference.
+
+=cut
+
+sub assert_nonref($;$) {
+    my $this = shift;
+    my $name = shift;
+
+    assert_defined( $this, $name );
+    if ( ref($this) ) {
+	require Carp;
+	&Carp::confess( _fail_msg($_[1]) );
+    }
+}
+
+=head2 assert_nonblank( $this [, $name] )
+
+Asserts that I<$this> is not blank and not a reference.
+
+=cut
+
+sub assert_nonblank($;$) {
+    my $this = shift;
+    my $name = shift;
+
+    assert_nonref( $this, $name );
+    if ( $this eq "" ) {
 	require Carp;
 	&Carp::confess( _fail_msg($_[1]) );
     }

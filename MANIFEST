@@ -8,3 +8,5 @@ t/01.load.t
 t/02.coverage.t
 t/assert_defined.t
 t/assert_isa.t
+t/assert_nonblank.t
+t/assert_nonref.t
