@@ -1,6 +1,6 @@
 #!perl -Tw
 
-use Test::More 'no_plan';
+use Test::More tests => 20;
 
 use_ok( 'Carp::Assert::More' );
 

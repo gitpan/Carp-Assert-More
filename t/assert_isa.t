@@ -3,7 +3,7 @@
 use warnings;
 use strict;
 
-use Test::More 'no_plan';
+use Test::More tests => 5;
 use IO::File; # just for creating objects
 
 BEGIN { use_ok( 'Carp::Assert::More' ); }

@@ -16,32 +16,34 @@ Carp::Assert::More - convenience wrappers around Carp::Assert
 
 =head1 VERSION
 
-Version 1.00
+Version 1.02
 
     $Header: /home/cvs/carp-assert-more/More.pm,v 1.18 2004/01/18 04:15:36 andy Exp $
 
 =cut
 
 BEGIN {
-    $VERSION = '1.00';
+    $VERSION = '1.02';
     @ISA = qw(Exporter);
     @EXPORT = qw(
         assert_defined
+        assert_exists
         assert_fail
+        assert_hashref
         assert_in
+        assert_integer
         assert_isa
         assert_like
-        assert_nonref
+        assert_listref
+        assert_negative
+        assert_negative_integer
         assert_nonblank
-        assert_integer
+        assert_nonempty
+        assert_nonref
         assert_nonzero
         assert_nonzero_integer
-        assert_exists
         assert_positive
-        assert_negative
         assert_positive_integer
-        assert_negative_integer
-        assert_nonempty
     );
 }
 
@@ -71,10 +73,6 @@ other than readability and simplicity of the code.
 
 My intent here is to make common assertions easy so that we as programmers
 have no excuse to not use them.
-
-=head1 TODO
-
-Many more functions.  This is just the first proof of concept.
 
 =head1 CAVEATS
 
@@ -364,7 +362,8 @@ sub assert_like($$;$) {
 
 =head2 assert_in( $string, \@inlist [,$name] );
 
-Asserts that I<$string> is defined and matches one of the elements of I<\@inlist>.
+Asserts that I<$string> is defined and matches one of the elements
+of I<\@inlist>.
 
 I<\@inlist> must be an array reference of defined strings.
 
@@ -415,13 +414,64 @@ sub assert_exists($$;$) {
     }
 }
 
+
+=head2 assert_hashref( $ref [,$name] )
+
+Asserts that I<$ref> is defined, and is a reference to a (possibly empty) hash.
+
+B<NB:> This method returns I<false> for objects, even those whose underlying
+data is a hashref. This is as it should be, under the assumptions that:
+
+=over 4
+
+=item (a)
+
+you shouldn't rely on the underlying data structure of a particular class, and
+
+=item (b)
+
+you should use C<assert_isa> instead.
+
+=back
+
+=cut
+
+sub assert_hashref($;$) {
+    my $ref = shift;
+    my $name = shift;
+
+    return assert_isa($ref, 'HASH');
+}
+
+=head2 assert_listref( $ref [,$name] )
+
+Asserts that I<$ref> is defined, and is a reference to a (possibly empty) list.
+
+B<NB:> The same caveat about objects whose underlying structure is a
+hash (see C<assert_hashref>) applies here; this method returns false
+even for objects whose underlying structure is an array.
+
+=cut
+
+sub assert_listref($;$) {
+    my $ref = shift;
+    my $name = shift;
+
+    return assert_isa($ref, 'ARRAY');
+}
+
 =head1 AUTHOR
 
 Andy Lester <andy@petdance.com>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Pete Krawczyk and David Storrs for assert_ functions.
+Thanks to
+Pete Krawczyk,
+David Storrs
+and
+Dan Friedman
+for assert_ functions.
 
 =cut
 
