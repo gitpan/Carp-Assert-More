@@ -3,7 +3,7 @@
 use warnings;
 use strict;
 
-use Test::More tests=>6;
+use Test::More tests=>8;
 
 BEGIN { use_ok( 'Carp::Assert::More' ); }
 
@@ -16,6 +16,8 @@ my @cases = (
     [ 0.4,      FAIL ],
     [ -10,      FAIL ],
     [ "dog",    FAIL ],
+    [ "14.",    FAIL ],
+    [ "14",     PASS ],
 );
 
 for my $case ( @cases ) {

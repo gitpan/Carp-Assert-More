@@ -1,13 +1,17 @@
 Revision history for Perl extension Carp::Assert::More.
 
-1.08	Wed Nov 24 11:44:34 CST 2004
-	[ENHANCEMENTS]
-	* Added assert_is() and assert_isnt()
-	* Organized the functions into logical groupings.
+1.10
+        [FIXES]
+        * Fixed assert_positive_integer() to not pass "14.".
 
-	[INTERNALS]
-	* Now requires Test::Exception.
-	* Added t/pod.t and t/pod-coverage.t
+1.08    Wed Nov 24 11:44:34 CST 2004
+        [ENHANCEMENTS]
+        * Added assert_is() and assert_isnt()
+        * Organized the functions into logical groupings.
+
+        [INTERNALS]
+        * Now requires Test::Exception.
+        * Added t/pod.t and t/pod-coverage.t
 
 
 1.06    Sat Oct 30 23:50:45 CDT 2004

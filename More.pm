@@ -16,12 +16,12 @@ Carp::Assert::More - convenience wrappers around Carp::Assert
 
 =head1 VERSION
 
-Version 1.08
+Version 1.10
 
 =cut
 
 BEGIN {
-    $VERSION = '1.08';
+    $VERSION = '1.10';
     @ISA = qw(Exporter);
     @EXPORT = qw(
         assert_defined
@@ -98,7 +98,7 @@ sub assert_is($$;$) {
     return if !defined($string) && !defined($match);
     assert_defined( $string, $name );
     assert_defined( $match, $name );
-     
+
     return if $string eq $match;
 
     require Carp;
@@ -286,9 +286,10 @@ sub assert_nonzero_integer($;$) {
 Asserts that the numeric value of I<$this> is greater than zero, and
 that I<$this> is an integer.
 
-    assert_positive_integer( 0 );    # FAIL
-    assert_positive_integer( -14 );  # FAIL
-    assert_positive_integer( '14.' );  # pass
+    assert_positive_integer( 0 );     # FAIL
+    assert_positive_integer( -14 );   # FAIL
+    assert_positive_integer( '14.' ); # FAIL
+    assert_positive_integer( '14' );  # pass
 
 =cut
 
@@ -517,7 +518,7 @@ sub assert_fail(;$) {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004 Andy Lester. All rights reserved. This program is
+Copyright (c) 2005 Andy Lester. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
@@ -532,4 +533,4 @@ for code and fixes.
 
 =cut
 
-return 1; # happiness
+"I stood on the porch in a tie."
