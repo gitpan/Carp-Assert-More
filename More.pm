@@ -16,14 +16,12 @@ Carp::Assert::More - convenience wrappers around Carp::Assert
 
 =head1 VERSION
 
-Version 1.02
-
-    $Header: /home/cvs/carp-assert-more/More.pm,v 1.18 2004/01/18 04:15:36 andy Exp $
+Version 1.04
 
 =cut
 
 BEGIN {
-    $VERSION = '1.02';
+    $VERSION = '1.04';
     @ISA = qw(Exporter);
     @EXPORT = qw(
         assert_defined
@@ -106,10 +104,10 @@ Asserts that I<$this> is defined.
 =cut
 
 sub assert_defined($;$) {
-    if ( !defined($_[0]) ) {
-        require Carp;
-        &Carp::confess( _fail_msg($_[1]) );
-    }
+    return if defined( $_[0] );
+
+    require Carp;
+    &Carp::confess( _fail_msg($_[1]) );
 }
 
 =head2 assert_nonref( $this [, $name ] )
@@ -123,10 +121,10 @@ sub assert_nonref($;$) {
     my $name = shift;
 
     assert_defined( $this, $name );
-    if ( ref($this) ) {
-        require Carp;
-        &Carp::confess( _fail_msg($name) );
-    }
+    return unless ref( $this );
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_nonblank( $this [, $name] )
@@ -140,10 +138,10 @@ sub assert_nonblank($;$) {
     my $name = shift;
 
     assert_nonref( $this, $name );
-    if ( $this eq "" ) {
-        require Carp;
-        &Carp::confess( _fail_msg($_[1]) );
-    }
+    return if $this ne "";
+
+    require Carp;
+    &Carp::confess( _fail_msg($_[1]) );
 }
 
 =head2 assert_integer( $this [, $name ] )
@@ -161,10 +159,10 @@ sub assert_integer($;$) {
     my $name = shift;
 
     assert_nonref( $this, $name );
-    if ( $this !~ /^-?\d+$/ ) {
-        require Carp;
-        &Carp::confess( _fail_msg($name) );
-    }
+    return if $this =~ /^-?\d+$/;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_nonzero( $this [, $name ] )
@@ -184,10 +182,10 @@ sub assert_nonzero($;$) {
     my $name = shift;
 
     no warnings;
-    if ( $this+0 == 0 ) {
-        require Carp;
-        &Carp::confess( _fail_msg($name) );
-    }
+    return if $this+0 != 0;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_positive( $this [, $name ] )
@@ -205,19 +203,19 @@ sub assert_positive($;$) {
     my $name = shift;
 
     no warnings;
-    if ( $this+0 <= 0 ) {
-        require Carp;
-        &Carp::confess( _fail_msg($name) );
-    }
+    return if $this+0 > 0;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_negative( $this [, $name ] )
 
 Asserts that the numeric value of I<$this> is less than zero.
 
-    assert_negative( 0 );    # FAIL
-    assert_negative( -14 );  # FAIL
-    assert_negative( '14.' );  # pass
+    assert_negative( 0 );       # FAIL
+    assert_negative( -14 );     # pass
+    assert_negative( '14.' );   # FAIL
 
 =cut
 
@@ -226,10 +224,10 @@ sub assert_negative($;$) {
     my $name = shift;
 
     no warnings;
-    if ( $this+0 >= 0 ) {
-        require Carp;
-        &Carp::confess( _fail_msg($name) );
-    }
+    return if $this+0 < 0;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_nonzero_integer( $this [, $name ] )
@@ -335,10 +333,17 @@ sub assert_isa($$;$) {
 
     assert_defined( $this, $name );
 
-    if ( ref($this) ne $type ) {
-        require Carp;
-        &Carp::confess( _fail_msg($name) );
-    }
+    # The assertion is true if
+    # 1) For objects, $this is of class $type or of a subclass of $type
+    # 2) For non-objects, $this is a reference to a HASH, SCALAR, ARRAY, etc.
+
+    require Scalar::Util;
+
+    return if Scalar::Util::blessed( $this ) && $this->isa( $type );
+    return if ref($this) eq $type;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_like( $string, qr/regex/ [,$name] )
@@ -352,12 +357,12 @@ sub assert_like($$;$) {
     my $regex = shift;
     my $name = shift;
 
-    assert_nonref($string, $name);
-    assert_isa( $regex, 'Regexp' );
-    if (!($string =~ $regex)) {
-        require Carp;
-        &Carp::confess( _fail_msg($name) );
-    }
+    assert_nonref( $string, $name );
+    assert_isa( $regex, 'Regexp', $name );
+    return if $string =~ $regex;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_in( $string, \@inlist [,$name] );
@@ -374,10 +379,10 @@ sub assert_in($$;$) {
     my $arrayref = shift;
     my $name = shift;
 
-    assert_nonref($string);
-    assert_isa( $arrayref, 'ARRAY' );
+    assert_nonref( $string, $name );
+    assert_isa( $arrayref, 'ARRAY', $name );
     foreach my $element (@{$arrayref}) {
-        assert_nonref($element);
+        assert_nonref( $element, $name );
         return if $string eq $element;
     }
     require Carp;
@@ -403,7 +408,7 @@ sub assert_exists($$;$) {
     my $key = shift;
     my $name = shift;
 
-    assert_isa( $hash, 'HASH' );
+    assert_isa( $hash, 'HASH', $name );
     my @list = ref($key) ? @$key : ($key);
 
     for ( @list ) {
@@ -440,7 +445,7 @@ sub assert_hashref($;$) {
     my $ref = shift;
     my $name = shift;
 
-    return assert_isa($ref, 'HASH');
+    return assert_isa( $ref, 'HASH', $name );
 }
 
 =head2 assert_listref( $ref [,$name] )
@@ -457,7 +462,7 @@ sub assert_listref($;$) {
     my $ref = shift;
     my $name = shift;
 
-    return assert_isa($ref, 'ARRAY');
+    return assert_isa( $ref, 'ARRAY', $name );
 }
 
 =head1 AUTHOR
@@ -468,10 +473,10 @@ Andy Lester <andy@petdance.com>
 
 Thanks to
 Pete Krawczyk,
-David Storrs
-and
-Dan Friedman
-for assert_ functions.
+David Storrs,
+Dan Friedman,
+and Allard Hoeve
+for code and fixes.
 
 =cut
 

@@ -1,12 +1,13 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Carp-Assert-More
-version:      1.02
+version:      1.04
 version_from: More.pm
 installdirs:  site
 requires:
     Carp:                          0
     Carp::Assert:                  0
+    Scalar::Util:                  0
     Test::More:                    0.18
 
 distribution_type: module

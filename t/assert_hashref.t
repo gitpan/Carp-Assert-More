@@ -47,8 +47,9 @@ eval {
 };
 like( $@, qr/Assertion.*failed/ );
 
-# Foo->new isn't, strictly speaking, a hashref
+# Foo->new->isa("HASH") returns true, so do we
 eval {
     assert_hashref( Foo->new );
 };
-like( $@, qr/Assertion.*failed/ );
+is( $@, '' );
+

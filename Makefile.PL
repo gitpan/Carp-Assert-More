@@ -12,6 +12,7 @@ WriteMakefile(
         Carp            => 0,
         'Carp::Assert'  => 0,
         'Test::More'    => 0.18,
+        'Scalar::Util'  => 0,
     },
 
     dist => {

@@ -1,5 +1,17 @@
 Revision history for Perl extension Carp::Assert::More.
 
+1.04    Mon Oct 18 10:21:37 CDT 2004
+        [ENHANCEMENTS]
+        * assert_isa() is now aware of subclasses.
+
+        [FIXES]
+        * $names weren't getting passed to sub-assertions.  Now they are.
+
+        [DOCUMENTATION]
+        * Documentation fix.
+
+        This is the "all thanks to Allard Hoeve" release.
+
 1.02    Tue Oct  5 17:31:56 CDT 2004
         [ENHANCEMENTS]
         * Added assert_hashref() and assert_listref().  Thanks to Dan

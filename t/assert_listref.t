@@ -54,8 +54,8 @@ eval {
 };
 like( $@, qr/Assertion.*failed/ );
 
-# Foo->new isn't, strictly speaking, a listref
+# Foo->new->isa("ARRAY") returns true, so do we
 eval {
     assert_listref( Foo->new );
 };
-like( $@, qr/Assertion.*failed/ );
+is( $@, '' );

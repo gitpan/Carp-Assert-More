@@ -14,6 +14,7 @@ $@ = '';
 eval {
     my $fh = new IO::File;
     assert_isa( $fh, 'IO::File', 'Created an IO::File object' );
+    assert_isa( $fh, 'GLOB',     'Created an IO::File object, which is a GLOB' );
 };
 is( $@, '' );
 
