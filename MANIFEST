@@ -13,7 +13,9 @@ t/assert_fail.t
 t/assert_hashref.t
 t/assert_in.t
 t/assert_integer.t
+t/assert_is.t
 t/assert_isa.t
+t/assert_isnt.t
 t/assert_like.t
 t/assert_listref.t
 t/assert_negative_integer.t
@@ -25,3 +27,5 @@ t/assert_nonzero_integer.t
 t/assert_nonzero.t
 t/assert_positive_integer.t
 t/assert_positive.t
+t/pod.t
+t/pod-coverage.t

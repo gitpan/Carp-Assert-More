@@ -9,10 +9,11 @@ WriteMakefile(
     },
 
     PREREQ_PM   => {
-        Carp            => 0,
-        'Carp::Assert'  => 0,
-        'Test::More'    => 0.18,
-        'Scalar::Util'  => 0,
+        Carp		    => 0,
+        'Carp::Assert'	    => 0,
+        'Test::More'	    => 0.18,
+        'Scalar::Util'	    => 0,
+	'Test::Exception'   => 0,	
     },
 
     dist => {

@@ -16,12 +16,12 @@ Carp::Assert::More - convenience wrappers around Carp::Assert
 
 =head1 VERSION
 
-Version 1.06
+Version 1.08
 
 =cut
 
 BEGIN {
-    $VERSION = '1.06';
+    $VERSION = '1.08';
     @ISA = qw(Exporter);
     @EXPORT = qw(
         assert_defined
@@ -30,7 +30,9 @@ BEGIN {
         assert_hashref
         assert_in
         assert_integer
+        assert_is
         assert_isa
+        assert_isnt
         assert_like
         assert_listref
         assert_negative
@@ -49,8 +51,8 @@ BEGIN {
 
     use Carp::Assert::More;
 
-    my $parser = HTML::Parser->new();
-    assert_isa( $parser, 'HTML::Parser', 'Got back a correct object' );
+    my $obj = My::Object;
+    assert_isa( $obj, 'My::Object', 'Got back a correct object' );
 
 =head1 DESCRIPTION
 
@@ -79,22 +81,67 @@ backwards compatible with anything besides Perl 5.6.1, much less back
 to 5.004.  Perhaps someone with better testing resources in that area
 can help me out here.
 
-=head1 FUNCTIONS
+=head1 SIMPLE ASSERTIONS
 
-Please note that there is no C<assert_string> function.  A string is
-just a non-reference, for which we have C<assert_nonref>.
+=head2 assert_is( $string, $match [,$name] )
 
-=head2 assert_fail( [$name] )
-
-Assertion that always fails.  C<assert_fail($msg)> is exactly the same
-as calling C<assert(0,$msg)>, but it eliminates that case where you
-accidentally use C<assert($msg)>, which of course never fires.
+Asserts that I<$string> matches I<$match>.
 
 =cut
 
-sub assert_fail(;$) {
+sub assert_is($$;$) {
+    my $string = shift;
+    my $match = shift;
+    my $name = shift;
+
+    # undef only matches undef
+    return if !defined($string) && !defined($match);
+    assert_defined( $string, $name );
+    assert_defined( $match, $name );
+     
+    return if $string eq $match;
+
     require Carp;
-    &Carp::confess( _fail_msg($_[0]) );
+    &Carp::confess( _fail_msg($name) );
+}
+
+=head2 assert_isnt( $string, $unmatch [,$name] )
+
+Asserts that I<$string> does NOT match I<$unmatch>.
+
+=cut
+
+sub assert_isnt($$;$) {
+    my $string = shift;
+    my $unmatch = shift;
+    my $name = shift;
+
+    # undef only matches undef
+    return if defined($string) xor defined($unmatch);
+
+    return if defined($string) && defined($unmatch) && ($string ne $unmatch);
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
+}
+
+=head2 assert_like( $string, qr/regex/ [,$name] )
+
+Asserts that I<$string> matches I<qr/regex/>.
+
+=cut
+
+sub assert_like($$;$) {
+    my $string = shift;
+    my $regex = shift;
+    my $name = shift;
+
+    assert_nonref( $string, $name );
+    assert_isa( $regex, 'Regexp', $name );
+    return if $string =~ $regex;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_defined( $this [, $name] )
@@ -108,23 +155,6 @@ sub assert_defined($;$) {
 
     require Carp;
     &Carp::confess( _fail_msg($_[1]) );
-}
-
-=head2 assert_nonref( $this [, $name ] )
-
-Asserts that I<$this> is not undef and not a reference.
-
-=cut
-
-sub assert_nonref($;$) {
-    my $this = shift;
-    my $name = shift;
-
-    assert_defined( $this, $name );
-    return unless ref( $this );
-
-    require Carp;
-    &Carp::confess( _fail_msg($name) );
 }
 
 =head2 assert_nonblank( $this [, $name] )
@@ -143,6 +173,8 @@ sub assert_nonblank($;$) {
     require Carp;
     &Carp::confess( _fail_msg($_[1]) );
 }
+
+=head1 NUMERIC ASSERTIONS
 
 =head2 assert_integer( $this [, $name ] )
 
@@ -287,6 +319,35 @@ sub assert_negative_integer($;$) {
     assert_integer( $this, $name );
 }
 
+=head1 REFERENCE ASSERTIONS
+
+=head2 assert_isa( $this, $type [, $name ] )
+
+Asserts that I<$this> is an object of type I<$type>.
+
+=cut
+
+sub assert_isa($$;$) {
+    my $this = shift;
+    my $type = shift;
+    my $name = shift;
+
+    assert_defined( $this, $name );
+
+    # The assertion is true if
+    # 1) For objects, $this is of class $type or of a subclass of $type
+    # 2) For non-objects, $this is a reference to a HASH, SCALAR, ARRAY, etc.
+
+    require Scalar::Util;
+
+    return if Scalar::Util::blessed( $this ) && $this->isa( $type );
+    return if ref($this) eq $type;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
+}
+
+
 =head2 assert_nonempty( $this [, $name ] )
 
 I<$this> must be a ref to either a hash or an array.  Asserts that that
@@ -320,50 +381,69 @@ sub assert_nonempty($;$) {
     }
 }
 
-=head2 assert_isa( $this, $type [, $name ] )
+=head2 assert_nonref( $this [, $name ] )
 
-Asserts that I<$this> is an object of type I<$type>.
+Asserts that I<$this> is not undef and not a reference.
 
 =cut
 
-sub assert_isa($$;$) {
+sub assert_nonref($;$) {
     my $this = shift;
-    my $type = shift;
     my $name = shift;
 
     assert_defined( $this, $name );
-
-    # The assertion is true if
-    # 1) For objects, $this is of class $type or of a subclass of $type
-    # 2) For non-objects, $this is a reference to a HASH, SCALAR, ARRAY, etc.
-
-    require Scalar::Util;
-
-    return if Scalar::Util::blessed( $this ) && $this->isa( $type );
-    return if ref($this) eq $type;
+    return unless ref( $this );
 
     require Carp;
     &Carp::confess( _fail_msg($name) );
 }
 
-=head2 assert_like( $string, qr/regex/ [,$name] )
+=head2 assert_hashref( $ref [,$name] )
 
-Asserts that I<$string> matches I<qr/regex/>.
+Asserts that I<$ref> is defined, and is a reference to a (possibly empty) hash.
+
+B<NB:> This method returns I<false> for objects, even those whose underlying
+data is a hashref. This is as it should be, under the assumptions that:
+
+=over 4
+
+=item (a)
+
+you shouldn't rely on the underlying data structure of a particular class, and
+
+=item (b)
+
+you should use C<assert_isa> instead.
+
+=back
 
 =cut
 
-sub assert_like($$;$) {
-    my $string = shift;
-    my $regex = shift;
+sub assert_hashref($;$) {
+    my $ref = shift;
     my $name = shift;
 
-    assert_nonref( $string, $name );
-    assert_isa( $regex, 'Regexp', $name );
-    return if $string =~ $regex;
-
-    require Carp;
-    &Carp::confess( _fail_msg($name) );
+    return assert_isa( $ref, 'HASH', $name );
 }
+
+=head2 assert_listref( $ref [,$name] )
+
+Asserts that I<$ref> is defined, and is a reference to a (possibly empty) list.
+
+B<NB:> The same caveat about objects whose underlying structure is a
+hash (see C<assert_hashref>) applies here; this method returns false
+even for objects whose underlying structure is an array.
+
+=cut
+
+sub assert_listref($;$) {
+    my $ref = shift;
+    my $name = shift;
+
+    return assert_isa( $ref, 'ARRAY', $name );
+}
+
+=head1 SET AND HASH MEMBERSHIP
 
 =head2 assert_in( $string, \@inlist [,$name] );
 
@@ -419,51 +499,21 @@ sub assert_exists($$;$) {
     }
 }
 
+=head1 UTILITY ASSERTIONS
 
-=head2 assert_hashref( $ref [,$name] )
+=head2 assert_fail( [$name] )
 
-Asserts that I<$ref> is defined, and is a reference to a (possibly empty) hash.
-
-B<NB:> This method returns I<false> for objects, even those whose underlying
-data is a hashref. This is as it should be, under the assumptions that:
-
-=over 4
-
-=item (a)
-
-you shouldn't rely on the underlying data structure of a particular class, and
-
-=item (b)
-
-you should use C<assert_isa> instead.
-
-=back
+Assertion that always fails.  C<assert_fail($msg)> is exactly the same
+as calling C<assert(0,$msg)>, but it eliminates that case where you
+accidentally use C<assert($msg)>, which of course never fires.
 
 =cut
 
-sub assert_hashref($;$) {
-    my $ref = shift;
-    my $name = shift;
-
-    return assert_isa( $ref, 'HASH', $name );
+sub assert_fail(;$) {
+    require Carp;
+    &Carp::confess( _fail_msg($_[0]) );
 }
 
-=head2 assert_listref( $ref [,$name] )
-
-Asserts that I<$ref> is defined, and is a reference to a (possibly empty) list.
-
-B<NB:> The same caveat about objects whose underlying structure is a
-hash (see C<assert_hashref>) applies here; this method returns false
-even for objects whose underlying structure is an array.
-
-=cut
-
-sub assert_listref($;$) {
-    my $ref = shift;
-    my $name = shift;
-
-    return assert_isa( $ref, 'ARRAY', $name );
-}
 
 =head1 COPYRIGHT
 
