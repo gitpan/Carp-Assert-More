@@ -1,5 +1,8 @@
 Revision history for Perl extension Carp::Assert::More.
 
+0.03	August 15, 2002
+	- Added assert_fail
+
 0.02	August 8, 2002
 	- Added assert_nonblank and assert_nonref
 
