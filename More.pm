@@ -16,12 +16,12 @@ Carp::Assert::More - convenience wrappers around Carp::Assert
 
 =head1 VERSION
 
-Version 1.04
+Version 1.06
 
 =cut
 
 BEGIN {
-    $VERSION = '1.04';
+    $VERSION = '1.06';
     @ISA = qw(Exporter);
     @EXPORT = qw(
         assert_defined
@@ -465,9 +465,11 @@ sub assert_listref($;$) {
     return assert_isa( $ref, 'ARRAY', $name );
 }
 
-=head1 AUTHOR
+=head1 COPYRIGHT
 
-Andy Lester <andy@petdance.com>
+Copyright (c) 2004 Andy Lester. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
 
 =head1 ACKNOWLEDGEMENTS
 

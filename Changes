@@ -1,5 +1,9 @@
 Revision history for Perl extension Carp::Assert::More.
 
+1.06    Sat Oct 30 23:50:45 CDT 2004
+        * No functionality changes.  Just added a Copyright notice to
+          so we can put it in Debian.
+
 1.04    Mon Oct 18 10:21:37 CDT 2004
         [ENHANCEMENTS]
         * assert_isa() is now aware of subclasses.
