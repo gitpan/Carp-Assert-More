@@ -7,7 +7,11 @@ README
 t/01.load.t
 t/02.coverage.t
 t/assert_defined.t
+t/assert_exists.t
 t/assert_fail.t
+t/assert_integer.t
 t/assert_isa.t
 t/assert_nonblank.t
 t/assert_nonref.t
+t/assert_nonzero.t
+t/assert_nonzero_integer.t

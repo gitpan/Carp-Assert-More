@@ -1,5 +1,11 @@
 Revision history for Perl extension Carp::Assert::More.
 
+0.04	August 21, 2002
+	- Added assert_integer
+	- Added assert_nonzero
+	- Added assert_nonzero_integer
+	- Added assert_exists
+
 0.03	August 15, 2002
 	- Added assert_fail
 

@@ -22,3 +22,17 @@ eval {
     assert_isa( $random, 'IO::File', 'Created an IO::File object' );
 };
 like( $@, qr/Assertion.*failed/ );
+
+
+
+eval {
+    my @array;
+    assert_isa( \@array, 'HASH', 'An array is not a hash' );
+};
+like( $@, qr/Assertion.*failed/ );
+
+eval {
+    my %hash;
+    assert_isa( \%hash, 'HASH', 'Created a hash' );
+};
+is( $@, '' );
