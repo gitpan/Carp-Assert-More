@@ -1,4 +1,4 @@
-# $Id: 02.coverage.t,v 1.1 2002/08/08 15:29:09 andy Exp $
+#!perl -Tw
 
 use Test::More 'no_plan';
 

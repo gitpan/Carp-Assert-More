@@ -1,11 +1,7 @@
-#!/usr/bin/perl -w
+#!perl -Tw
 
-# $Id: 01.load.t,v 1.1.1.1 2002/08/08 04:19:04 andy Exp $
+use Test::More tests => 1;
 
-BEGIN { $| = 1; print "1..1\n"; }
-END   { print "not ok 1\n" unless $loaded; }
-
-use Carp::Assert;
-$loaded = 1;
-print "ok\n";
-
+BEGIN {
+    use_ok( 'Carp::Assert::More' );
+}

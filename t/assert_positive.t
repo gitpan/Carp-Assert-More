@@ -12,9 +12,9 @@ use constant FAIL => 2;
 
 my @cases = (
     [ 5,        PASS ],
-    [ 0,        PASS ],
-    [ 0.4,      FAIL ],
-    [ -10,      PASS ],
+    [ 0,        FAIL ],
+    [ 0.4,      PASS ],
+    [ -10,      FAIL ],
     [ "dog",    FAIL ],
 );
 
@@ -22,7 +22,7 @@ for my $case ( @cases ) {
     my ($val,$status) = @$case;
 
     my $desc = "Checking \"$val\"";
-    eval { assert_integer( $val ) };
+    eval { assert_positive( $val ) };
 
     if ( $status eq FAIL ) {
         like( $@, qr/Assertion.+failed/, $desc );

@@ -1,11 +1,13 @@
-#!/usr/bin/perl
+#!perl -Tw
 
 use warnings;
 use strict;
 
-use Test::More tests=>7;
+use Test::More tests=>8;
 
-BEGIN { use_ok( 'Carp::Assert::More' ); }
+BEGIN {
+    use_ok( 'Carp::Assert::More' );
+}
 
 my %foo = (
     name => "Andy Lester",
@@ -36,6 +38,11 @@ eval {
     assert_exists( \%foo, [qw( name )] );
 };
 is( $@, "" );
+
+eval {
+    assert_exists( \%foo, [qw( name social-security-number )] );
+};
+like( $@, qr/Assertion.+failed/ );
 
 eval {
     assert_exists( \%foo, [qw( name phone )] );
