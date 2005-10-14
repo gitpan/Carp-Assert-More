@@ -1,6 +1,11 @@
 Revision history for Perl extension Carp::Assert::More.
 
-1.10
+1.12
+        [ENHANCEMENTS]
+        * Added assert_nonnegative() and assert_nonnegative_integer().
+        * Added assert_lacks().  Thanks to Bob Diss.
+
+1.10    Wed Feb 16 12:52:16 CST 2005
         [FIXES]
         * Fixed assert_positive_integer() to not pass "14.".
 

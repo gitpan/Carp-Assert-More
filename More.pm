@@ -16,12 +16,12 @@ Carp::Assert::More - convenience wrappers around Carp::Assert
 
 =head1 VERSION
 
-Version 1.10
+Version 1.12
 
 =cut
 
 BEGIN {
-    $VERSION = '1.10';
+    $VERSION = '1.12';
     @ISA = qw(Exporter);
     @EXPORT = qw(
         assert_defined
@@ -33,12 +33,15 @@ BEGIN {
         assert_is
         assert_isa
         assert_isnt
+        assert_lacks
         assert_like
         assert_listref
         assert_negative
         assert_negative_integer
         assert_nonblank
         assert_nonempty
+        assert_nonnegative
+        assert_nonnegative_integer
         assert_nonref
         assert_nonzero
         assert_nonzero_integer
@@ -241,6 +244,30 @@ sub assert_positive($;$) {
     &Carp::confess( _fail_msg($name) );
 }
 
+=head2 assert_nonnegative( $this [, $name ] )
+
+Asserts that the numeric value of I<$this> is greater than or equal
+to zero.  Since non-numeric strings evaluate to zero, this means that
+any non-numeric string will pass.
+
+    assert_nonnegative( 0 );    # pass
+    assert_nonnegative( -14 );  # FAIL
+    assert_nonnegative( '14.' );  # pass
+    assert_nonnegative( 'dog' );  # pass
+
+=cut
+
+sub assert_nonnegative($;$) {
+    my $this = shift;
+    my $name = shift;
+
+    no warnings;
+    return if $this+0 >= 0;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
+}
+
 =head2 assert_negative( $this [, $name ] )
 
 Asserts that the numeric value of I<$this> is less than zero.
@@ -298,6 +325,25 @@ sub assert_positive_integer($;$) {
     my $name = shift;
 
     assert_positive( $this, $name );
+    assert_integer( $this, $name );
+}
+
+=head2 assert_nonnegative_integer( $this [, $name ] )
+
+Asserts that the numeric value of I<$this> is not less than zero, and
+that I<$this> is an integer.
+
+    assert_nonnegative_integer( 0 );    # pass
+    assert_nonnegative_integer( -14 );  # pass
+    assert_nonnegative_integer( '14.' );  # FAIL
+
+=cut
+
+sub assert_nonnegative_integer($;$) {
+    my $this = shift;
+    my $name = shift;
+
+    assert_nonnegative( $this, $name );
     assert_integer( $this, $name );
 }
 
@@ -375,9 +421,11 @@ sub assert_nonempty($;$) {
     my $type = ref $ref;
     if ( $type eq "HASH" ) {
         assert_positive( scalar keys %$ref, $name );
-    } elsif ( $type eq "ARRAY" ) {
+    }
+    elsif ( $type eq "ARRAY" ) {
         assert_positive( scalar @$ref, $name );
-    } else {
+    }
+    else {
         assert_fail( "Not an array or hash reference" );
     }
 }
@@ -474,8 +522,8 @@ sub assert_in($$;$) {
 
 =head2 assert_exists( \%hash, \@keylist [,$name] )
 
-Asserts that I<$key> exists in I<%hash>, or that all of the keys in
-I<@keylist> exist in I<%this>.
+Asserts that I<%hash> is indeed a hash, and that I<$key> exists in
+I<%hash>, or that all of the keys in I<@keylist> exist in I<%hash>.
 
     assert_exists( \%custinfo, 'name', 'Customer has a name field' );
 
@@ -494,6 +542,35 @@ sub assert_exists($$;$) {
 
     for ( @list ) {
         if ( !exists( $hash->{$_} ) ) {
+            require Carp;
+            &Carp::confess( _fail_msg($name) );
+        }
+    }
+}
+
+=head2 assert_lacks( \%hash, $key [,$name] )
+
+=head2 assert_lacks( \%hash, \@keylist [,$name] )
+
+Asserts that I<%hash> is indeed a hash, and that I<$key> does NOT exist
+in I<%hash>, or that none of the keys in I<@keylist> exist in I<%hash>.
+
+    assert_lacks( \%users, 'root', 'Root is not in the user table' );
+
+    assert_lacks( \%users, [qw( root admin nobody )], 'No bad usernames found' );
+
+=cut
+
+sub assert_lacks($$;$) {
+    my $hash = shift;
+    my $key = shift;
+    my $name = shift;
+
+    assert_isa( $hash, 'HASH', $name );
+    my @list = ref($key) ? @$key : ($key);
+
+    for ( @list ) {
+        if ( exists( $hash->{$_} ) ) {
             require Carp;
             &Carp::confess( _fail_msg($name) );
         }
@@ -525,6 +602,7 @@ terms as Perl itself.
 =head1 ACKNOWLEDGEMENTS
 
 Thanks to
+Bob Diss,
 Pete Krawczyk,
 David Storrs,
 Dan Friedman,
