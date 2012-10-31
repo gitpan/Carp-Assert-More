@@ -1,11 +1,11 @@
-NAME
-    Carp::Assert::More - Convenience functions for Carp::Assert
+# Carp::Assert::More
 
-SYNOPSIS
-    Coming
+Carp::Assert::More is a set of handy assertion functions for Perl.
 
-DESCRIPTION
-    Coming
+For example, instead of writing
 
-AUTHOR
-    Andy Lester <andy@petdance.com>
+    assert( $foo ne '', '$foo cannot be blank' );
+
+you can write
+
+    assert_nonblank( $foo, '$foo cannot be blank' );

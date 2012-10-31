@@ -16,12 +16,12 @@ Carp::Assert::More - convenience wrappers around Carp::Assert
 
 =head1 VERSION
 
-Version 1.12
+Version 1.14
 
 =cut
 
 BEGIN {
-    $VERSION = '1.12';
+    $VERSION = '1.14';
     @ISA = qw(Exporter);
     @EXPORT = qw(
         assert_defined
@@ -47,10 +47,14 @@ BEGIN {
         assert_nonzero_integer
         assert_positive
         assert_positive_integer
+        assert_undefined
+        assert_unlike
     );
 }
 
 =head1 SYNOPSIS
+
+A set of convenience functions for common assertions.
 
     use Carp::Assert::More;
 
@@ -132,6 +136,8 @@ sub assert_isnt($$;$) {
 
 Asserts that I<$string> matches I<qr/regex/>.
 
+The assertion fails either the string or the regex are undef.
+
 =cut
 
 sub assert_like($$;$) {
@@ -147,6 +153,29 @@ sub assert_like($$;$) {
     &Carp::confess( _fail_msg($name) );
 }
 
+=head2 assert_unlike( $string, qr/regex/ [,$name] )
+
+Asserts that I<$string> matches I<qr/regex/>.
+
+The assertion fails if the regex is undef.
+
+=cut
+
+sub assert_unlike($$;$) {
+    my $string = shift;
+    my $regex  = shift;
+    my $name   = shift;
+
+    return if !defined($string);
+
+    assert_nonref( $string, $name );
+    assert_isa( $regex, 'Regexp', $name );
+    return if $string !~ $regex;
+
+    require Carp;
+    &Carp::confess( _fail_msg($name) );
+}
+
 =head2 assert_defined( $this [, $name] )
 
 Asserts that I<$this> is defined.
@@ -155,6 +184,19 @@ Asserts that I<$this> is defined.
 
 sub assert_defined($;$) {
     return if defined( $_[0] );
+
+    require Carp;
+    &Carp::confess( _fail_msg($_[1]) );
+}
+
+=head2 assert_undefined( $this [, $name] )
+
+Asserts that I<$this> is not defined.
+
+=cut
+
+sub assert_undefined($;$) {
+    return unless defined( $_[0] );
 
     require Carp;
     &Carp::confess( _fail_msg($_[1]) );
@@ -174,7 +216,7 @@ sub assert_nonblank($;$) {
     return if $this ne "";
 
     require Carp;
-    &Carp::confess( _fail_msg($_[1]) );
+    &Carp::confess( _fail_msg($name) );
 }
 
 =head1 NUMERIC ASSERTIONS
@@ -183,8 +225,9 @@ sub assert_nonblank($;$) {
 
 Asserts that I<$this> is an integer, which may be zero or negative.
 
-    assert_integer( 0 );    # pass
-    assert_integer( -14 );  # pass
+    assert_integer( 0 );      # pass
+    assert_integer( 14 );     # pass
+    assert_integer( -14 );    # FAIL
     assert_integer( '14.' );  # FAIL
 
 =cut
@@ -250,8 +293,8 @@ Asserts that the numeric value of I<$this> is greater than or equal
 to zero.  Since non-numeric strings evaluate to zero, this means that
 any non-numeric string will pass.
 
-    assert_nonnegative( 0 );    # pass
-    assert_nonnegative( -14 );  # FAIL
+    assert_nonnegative( 0 );      # pass
+    assert_nonnegative( -14 );    # FAIL
     assert_nonnegative( '14.' );  # pass
     assert_nonnegative( 'dog' );  # pass
 
@@ -294,8 +337,8 @@ sub assert_negative($;$) {
 Asserts that the numeric value of I<$this> is not zero, and that I<$this>
 is an integer.
 
-    assert_nonzero_integer( 0 );    # FAIL
-    assert_nonzero_integer( -14 );  # pass
+    assert_nonzero_integer( 0 );      # FAIL
+    assert_nonzero_integer( -14 );    # pass
     assert_nonzero_integer( '14.' );  # FAIL
 
 =cut
@@ -333,8 +376,8 @@ sub assert_positive_integer($;$) {
 Asserts that the numeric value of I<$this> is not less than zero, and
 that I<$this> is an integer.
 
-    assert_nonnegative_integer( 0 );    # pass
-    assert_nonnegative_integer( -14 );  # pass
+    assert_nonnegative_integer( 0 );      # pass
+    assert_nonnegative_integer( -14 );    # pass
     assert_nonnegative_integer( '14.' );  # FAIL
 
 =cut
@@ -352,8 +395,8 @@ sub assert_nonnegative_integer($;$) {
 Asserts that the numeric value of I<$this> is less than zero, and that
 I<$this> is an integer.
 
-    assert_negative_integer( 0 );    # FAIL
-    assert_negative_integer( -14 );  # pass
+    assert_negative_integer( 0 );      # FAIL
+    assert_negative_integer( -14 );    # pass
     assert_negative_integer( '14.' );  # FAIL
 
 =cut
@@ -418,15 +461,24 @@ sub assert_nonempty($;$) {
     my $ref = shift;
     my $name = shift;
 
-    my $type = ref $ref;
-    if ( $type eq "HASH" ) {
-        assert_positive( scalar keys %$ref, $name );
-    }
-    elsif ( $type eq "ARRAY" ) {
-        assert_positive( scalar @$ref, $name );
+    require Scalar::Util;
+
+    my $underlying_type;
+    if ( Scalar::Util::blessed( $ref ) ) {
+        $underlying_type = Scalar::Util::reftype( $ref );
     }
     else {
-        assert_fail( "Not an array or hash reference" );
+        $underlying_type = ref( $ref );
+    }
+
+    if ( $underlying_type eq 'HASH' ) {
+        assert_positive( scalar keys %{$ref}, $name );
+    }
+    elsif ( $underlying_type eq 'ARRAY' ) {
+        assert_positive( scalar @{$ref}, $name );
+    }
+    else {
+        assert_fail( 'Not an array or hash reference' );
     }
 }
 
@@ -593,11 +645,12 @@ sub assert_fail(;$) {
 }
 
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT & LICENSE
 
-Copyright (c) 2005 Andy Lester. All rights reserved. This program is
-free software; you can redistribute it and/or modify it under the same
-terms as Perl itself.
+Copyright 2005-2012 Andy Lester.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the Artistic License version 2.0.
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -606,7 +659,9 @@ Bob Diss,
 Pete Krawczyk,
 David Storrs,
 Dan Friedman,
-and Allard Hoeve
+Allard Hoeve,
+Thomas L. Shinnick,
+and Leland Johnson
 for code and fixes.
 
 =cut

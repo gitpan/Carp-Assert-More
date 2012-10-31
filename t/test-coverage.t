@@ -1,10 +1,8 @@
 #!perl -Tw
 
-use Test::More tests => 25;
+use Test::More tests => 26;
 
-BEGIN {
-    use_ok( 'Carp::Assert::More' );
-}
+use Carp::Assert::More;
 
 my @funcs = ( @Carp::Assert::More::EXPORT, @Carp::Assert::More::EXPORT_OK );
 

@@ -1,6 +1,19 @@
 Revision history for Perl extension Carp::Assert::More.
 
-1.12
+1.14    Wed Oct 31 11:37:04 CDT 2012
+        [ENHANCEMENTS]
+        Added assert_undefined() for Ben Hengst.
+
+        Added assert_unlike().
+
+        [FIXES]
+        assert_nonblank() wasn't using the correct message.  Thanks to
+        Leland Johnson.
+
+        assert_nonempty() wouldn't work on blessed arrays and refs.
+        Now it will.
+
+1.12    Oct 14 2005
         [ENHANCEMENTS]
         * Added assert_nonnegative() and assert_nonnegative_integer().
         * Added assert_lacks().  Thanks to Bob Diss.
